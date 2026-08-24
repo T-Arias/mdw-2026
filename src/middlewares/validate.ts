@@ -4,7 +4,8 @@ import { ZodSchema } from "zod";
 
 export function validateBody(schema: ZodSchema) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const result = schema.safeParse(req.body);
+    const body = req.body === undefined ? {} : req.body;
+    const result = schema.safeParse(body);
 
     if (!result.success) {
       res.status(400).json({
@@ -17,7 +18,6 @@ export function validateBody(schema: ZodSchema) {
       return;
     }
 
-    // Reemplaza el body por la version parseada: con defaults aplicados y tipos ya coercionados.
     req.body = result.data;
     next();
   };

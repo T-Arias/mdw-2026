@@ -39,6 +39,11 @@ const studentSchema = new Schema<IStudentDocument>(
       required: [true, "Career is required"],
       trim: true,
     },
+    enrollmentDate: {
+      type: Date,
+      required: [true, "Enrollment date is required"],
+      default: Date.now,
+    },
     active: {
       type: Boolean,
       default: true,

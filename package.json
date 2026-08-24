@@ -13,6 +13,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@modelcontextprotocol/core": "^2.0.0",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
