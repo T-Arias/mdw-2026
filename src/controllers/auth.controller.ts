@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import User from "../models/User";
 import { RegisterInput, LoginInput } from "../schemas/auth.schema";
 import { UserRole } from "../types/auth.types";
+import { ConflictError, UnauthorizedError } from "../core/errors";
+import { sendError } from "../core/http-error";
 
 const ACCESS_TOKEN_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -50,8 +52,7 @@ export async function registerUser(req: Request<{}, {}, RegisterInput>, res: Res
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(409).json({ success: false, error: { message: "El email ya esta en uso" } });
-      return;
+      throw new ConflictError("El email ya esta en uso");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -62,8 +63,7 @@ export async function registerUser(req: Request<{}, {}, RegisterInput>, res: Res
       data: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role },
     });
   } catch (error) {
-    console.error("[auth] error registering:", error);
-    res.status(500).json({ success: false, error: { message: "No se pudo registrar el usuario" } });
+    sendError(res, error);
   }
 }
 
@@ -73,14 +73,12 @@ export async function login(req: Request<{}, {}, LoginInput>, res: Response): Pr
 
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).json({ success: false, error: { message: "Credenciales invalidas" } });
-      return;
+      throw new UnauthorizedError("Credenciales invalidas");
     }
 
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
-      res.status(401).json({ success: false, error: { message: "Credenciales invalidas" } });
-      return;
+      throw new UnauthorizedError("Credenciales invalidas");
     }
 
     setSessionCookies(res, user._id.toString(), user.role);
@@ -90,8 +88,7 @@ export async function login(req: Request<{}, {}, LoginInput>, res: Response): Pr
       data: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
-    console.error("[auth] error logging in:", error);
-    res.status(500).json({ success: false, error: { message: "No se pudo iniciar sesion" } });
+    sendError(res, error);
   }
 }
 
@@ -101,7 +98,6 @@ export async function logout(_req: Request, res: Response): Promise<void> {
     res.clearCookie("refreshToken");
     res.status(200).json({ success: true, data: { message: "Sesion cerrada" } });
   } catch (error) {
-    console.error("[auth] error logging out:", error);
-    res.status(500).json({ success: false, error: { message: "No se pudo cerrar la sesion" } });
+    sendError(res, error);
   }
 }

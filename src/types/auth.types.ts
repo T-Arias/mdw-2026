@@ -9,12 +9,3 @@ export interface JwtRefreshPayload {
   userId: string;
   role: UserRole;
 }
-
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-      userRole?: UserRole;
-    }
-  }
-}
