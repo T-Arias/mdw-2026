@@ -1,4 +1,8 @@
 import mongoose from "mongoose";
+import dns from "dns";
+
+// Force Node.js to use public DNS servers to bypass local routing/ISP issues
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 function getMongoUri(): string {
   const uri = process.env.MONGODB_URI;

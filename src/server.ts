@@ -14,7 +14,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN ?? "http://localhost:5173", crede
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/v1", v1Router);
+app.use("/api", v1Router);
 
 if (NODE_ENV === 'development') {
     app.get("/", (_req: Request, res: Response) => {
