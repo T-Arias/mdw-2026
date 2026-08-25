@@ -7,13 +7,10 @@ import {
   updateStudent,
   deleteStudent,
 } from "../controllers/students.controller";
-import { authMiddleware } from "../middlewares/auth.middleware";
 import { validateBody } from "../middlewares/validate";
 import { createStudentSchema, listStudentsSchema, updateStudentSchema } from "../schemas/student.schema";
 
 const router = Router();
-
-router.use(authMiddleware);
 
 router.query!("/", validateBody(listStudentsSchema), listStudents);
 router.get("/:id", getStudentById);
