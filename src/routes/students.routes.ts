@@ -7,8 +7,11 @@ import {
   updateStudent,
   deleteStudent,
 } from "../controllers/students.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
+
+router.use(authMiddleware);
 
 router.query!("/", listStudents);
 router.get("/:id", getStudentById);
