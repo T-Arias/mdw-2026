@@ -8,15 +8,17 @@ import {
   deleteStudent,
 } from "../controllers/students.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
+import { validateBody } from "../middlewares/validate";
+import { createStudentSchema, listStudentsSchema, updateStudentSchema } from "../schemas/student.schema";
 
 const router = Router();
 
 router.use(authMiddleware);
 
-router.query!("/", listStudents);
+router.query!("/", validateBody(listStudentsSchema), listStudents);
 router.get("/:id", getStudentById);
-router.post("/", createStudent);
-router.put("/:id", updateStudent);
+router.post("/", validateBody(createStudentSchema), createStudent);
+router.put("/:id", validateBody(updateStudentSchema), updateStudent);
 router.delete("/:id", deleteStudent);
 
 export default router;
