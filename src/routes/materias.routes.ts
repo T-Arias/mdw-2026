@@ -1,0 +1,25 @@
+// Mapeo entre (metodo HTTP + path) y controller. Sin logica de negocio aca.
+import { Router } from "express";
+import {
+  listMaterias,
+  getMateriaById,
+  createMateria,
+  updateMateria,
+  deleteMateria,
+} from "../controllers/materias.controller";
+import { validateBody } from "../middlewares/validate";
+import {
+  createMateriaSchema,
+  listMateriasSchema,
+  updateMateriaSchema,
+} from "../schemas/materia.schema";
+
+const router = Router();
+
+router.get("/", validateBody(listMateriasSchema), listMaterias);
+router.get("/:id", getMateriaById);
+router.post("/", validateBody(createMateriaSchema), createMateria);
+router.put("/:id", validateBody(updateMateriaSchema), updateMateria);
+router.delete("/:id", deleteMateria);
+
+export default router;
