@@ -2,6 +2,17 @@
 
 Stack: Node.js + Express + TypeScript · MongoDB + Mongoose · bcrypt + JWT en cookie `httpOnly` · React + React Router + React Hook Form · Redux Toolkit + RTK Query · Zod · LangChain · Vercel + Render/Railway.
 
+## Estructura
+
+```
+backend/    -> API Express + MongoDB (puerto 3000)
+frontend/   -> React + Vite (puerto 5173), se crea en la Clase 7
+clase N/    -> comandos y teoria de cada clase
+```
+
+Cada proyecto tiene su propio `package.json`, `node_modules` y `.env`: los comandos `npm` se corren
+dentro de `backend/` o `frontend/`, no en la raiz.
+
 ## Cronograma de clases
 
 | ✓ | Clase | Descripción |
@@ -9,10 +20,10 @@ Stack: Node.js + Express + TypeScript · MongoDB + Mongoose · bcrypt + JWT en c
 | [x] | Clase 1 — 11/08 — Fundamentos de Node | Node, Express + TypeScript, tsconfig, tipos básicos |
 | [x] | Clase 2 — 18/08 — Persistencia y rutas | MongoDB + Mongoose, generics, CRUD completo |
 | [x] | Clase 3 — 25/08 — Middlewares y validación | Middlewares, validación con Zod |
-| [ ] | Clase 4 — 01/09 — Auth I: credenciales | bcrypt, registro y login, sesiones vs tokens |
-| [ ] | Clase 5 — 08/09 — Auth II: JWT a fondo | Anatomía JWT, claims, roles, refresh tokens, cookies httpOnly |
-| [ ] | Clase 6 — 15/09 — 📝 Parcial I | clases 1–5 |
-| [ ] | Clase 7 — 22/09 — React fundamentos | Vite, componentes, hooks, consumo de la API propia |
+| [x] | Clase 4 — 01/09 — Auth I: credenciales | bcrypt, registro y login, sesiones vs tokens |
+| [x] | Clase 5 — 08/09 — Auth II: JWT a fondo | Anatomía JWT, claims, roles, refresh tokens, cookies httpOnly |
+| [x] | Clase 6 — 15/09 — 📝 Parcial I | clases 1–5 |
+| [x] | Clase 7 — 22/09 — React fundamentos | Vite, componentes, hooks, consumo de la API propia |
 | [ ] | Clase 8 — 29/09 — 🔧 Taller de portfolio | Laboratorio práctico, maquetado one-page |
 | [ ] | Clase 9 — 06/10 — React Router | Rutas anidadas, params, rutas privadas |
 | [ ] | Clase 10 — 13/10 — Formularios | React Hook Form + Zod, login, panel admin |
