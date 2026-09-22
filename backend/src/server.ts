@@ -10,7 +10,12 @@ const PORT: number = Number(process.env.PORT) || 3000;
 type Environment = "development" | "test" | "production";
 const NODE_ENV: Environment = (process.env.NODE_ENV as Environment) ?? "development";
 
-app.use(cors({ origin: process.env.CORS_ORIGIN ?? "http://localhost:5173", credentials: true }));
+// QUERY no esta en los metodos por defecto de cors: sin esto el preflight de QUERY /subjects falla.
+app.use(cors({
+    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "QUERY"],
+}));
 app.use(express.json());
 app.use(cookieParser());
 
