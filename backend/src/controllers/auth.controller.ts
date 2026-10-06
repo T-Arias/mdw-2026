@@ -105,3 +105,22 @@ export async function logout(_req: Request, res: Response): Promise<void> {
     res.status(500).json({ success: false, error: { message: "No se pudo cerrar la sesion" } });
   }
 }
+
+// GET /auth/me: el front no puede leer la cookie httpOnly, asi que pregunta quien es por aca.
+export async function me(req: Request, res: Response): Promise<void> {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      res.status(401).json({ success: false, error: { message: "Sesion invalida" } });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (error) {
+    console.error("[auth] error fetching session:", error);
+    res.status(500).json({ success: false, error: { message: "No se pudo obtener la sesion" } });
+  }
+}
