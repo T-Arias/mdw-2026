@@ -1,11 +1,11 @@
-// Page: una vista completa (en la Clase 9 va a ser una ruta). Pide los datos y compone components.
+// Page: ruta publica "/home". Pide los datos y compone components.
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "../lib/api";
 import { getStudents } from "../services/students";
 import type { Student } from "../types/student";
 import { StudentCard } from "../components/StudentCard";
 
-export function Home() {
+export const Home = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,4 +46,4 @@ export function Home() {
       ))}
     </section>
   );
-}
+};
