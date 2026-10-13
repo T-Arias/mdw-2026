@@ -1,4 +1,5 @@
 import { api } from "../lib/api";
+import type { StudentFormValues } from "../schemas/student.schema";
 import type { Paginated, Student } from "../types/student";
 
 // El listado usa el metodo QUERY (filtros en el body). axios lo soporta nativo: api.query(url, body).
@@ -14,4 +15,18 @@ export const getStudents = async (): Promise<Student[]> => {
 export const getStudentById = async (id: string): Promise<Student> => {
   const { data } = await api.get<Student>(`/students/${id}`);
   return data;
+};
+
+export const createStudent = async (student: StudentFormValues): Promise<Student> => {
+  const { data } = await api.post<Student>("/students", student);
+  return data;
+};
+
+export const updateStudent = async (id: string, student: StudentFormValues): Promise<Student> => {
+  const { data } = await api.put<Student>(`/students/${id}`, student);
+  return data;
+};
+
+export const deleteStudent = async (id: string): Promise<void> => {
+  await api.delete(`/students/${id}`);
 };
