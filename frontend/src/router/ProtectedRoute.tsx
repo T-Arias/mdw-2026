@@ -4,10 +4,9 @@ import type { UserRole } from "../types/auth";
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
-  redirectTo?: string;
 }
 
-export const ProtectedRoute = ({ roles, redirectTo = "/home" }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ roles }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -20,7 +19,7 @@ export const ProtectedRoute = ({ roles, redirectTo = "/home" }: ProtectedRoutePr
   }
 
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to={redirectTo} replace />;
+    return <p className="text-red-600">No tenes permisos para ver esta pagina.</p>;
   }
 
   return <Outlet />;
