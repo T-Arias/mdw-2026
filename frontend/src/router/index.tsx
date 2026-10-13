@@ -33,7 +33,7 @@ export const router = createBrowserRouter([
       },
 
       {
-        element: <ProtectedRoute roles={["ADMIN"]} />,
+        element: <ProtectedRoute roles={["ADMIN"]} redirectTo="/perfil" />,
         children: [
           // Ruta sin element: solo agrupa por URL (/admin, /admin/sesiones) y renderiza a la hija directo
           {
