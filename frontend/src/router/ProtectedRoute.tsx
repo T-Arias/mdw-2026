@@ -11,7 +11,7 @@ export const ProtectedRoute = ({ roles }: ProtectedRouteProps) => {
   const location = useLocation();
 
   if (loading) {
-    return <p className="text-slate-500">Verificando sesion...</p>;
+    return <p className="text-ink/50">Verificando sesión...</p>;
   }
 
   if (!user) {
@@ -19,7 +19,9 @@ export const ProtectedRoute = ({ roles }: ProtectedRouteProps) => {
   }
 
   if (roles && !roles.includes(user.role)) {
-    return <p className="text-red-600">No tenes permisos para ver esta pagina.</p>;
+    return (
+      <p className="panel max-w-lg px-5 py-4 text-red-700">No tenés permisos para ver esta página.</p>
+    );
   }
 
   return <Outlet />;

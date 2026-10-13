@@ -35,11 +35,13 @@ export const Register = () => {
 
   // Fuera del Layout, igual que Login: arma su propio fondo de pantalla completa.
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6 font-sans">
-      <section className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900">Crear cuenta</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1 text-sm text-slate-700">
+    <main className="flex min-h-screen items-center justify-center p-6 font-sans">
+      <section className="panel w-full max-w-md p-8">
+        <p className="text-xs font-medium tracking-[0.18em] text-brand-700 uppercase">MDW</p>
+        <h2 className="mt-2 font-serif text-4xl text-ink">Crear cuenta</h2>
+        <p className="mt-2 mb-6 text-sm text-ink/60">El alta entra como usuario. El rol admin se asigna en la base.</p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink/80">
             Nombre
             <input
               type="text"
@@ -49,10 +51,10 @@ export const Register = () => {
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded border border-slate-300 px-3 py-2"
+              className="field font-normal"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm text-slate-700">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink/80">
             Email
             <input
               type="email"
@@ -60,37 +62,33 @@ export const Register = () => {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded border border-slate-300 px-3 py-2"
+              className="field font-normal"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm text-slate-700">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink/80">
             Contraseña
             <input
               type="password"
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded border border-slate-300 px-3 py-2"
+              className="field font-normal"
             />
           </label>
           {error && (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
             </p>
           )}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded bg-slate-900 py-2 font-medium text-white transition hover:bg-slate-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={submitting} className="btn mt-1">
             {submitting ? "Creando..." : "Crear cuenta"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
-          ¿Ya tenes cuenta?{" "}
-          <Link to="/login" className="font-medium text-slate-900 underline">
+        <p className="mt-6 text-center text-sm text-ink/60">
+          ¿Ya tenés cuenta?{" "}
+          <Link to="/login" className="font-medium text-brand-700 underline decoration-brand-600/40">
             Ingresar
           </Link>
         </p>

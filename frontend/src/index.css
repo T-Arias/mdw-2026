@@ -1,9 +1,61 @@
 @import "tailwindcss";
 
-/* Tokens propios: generan utilidades como bg-brand-600, text-brand-50, font-sans */
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --color-brand-50: oklch(97% 0.02 250);
-  --color-brand-600: oklch(55% 0.2 250);
-  --color-brand-700: oklch(48% 0.2 250);
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --color-ink: oklch(27% 0.02 55);
+  --color-paper: oklch(97.2% 0.012 85);
+  --color-card: oklch(99.2% 0.004 90);
+  --color-line: oklch(89% 0.015 75);
+  --color-brand-50: oklch(96% 0.03 55);
+  --color-brand-600: oklch(52% 0.11 48);
+  --color-brand-700: oklch(42% 0.1 45);
+}
+
+body {
+  color: var(--color-ink);
+  background:
+    radial-gradient(circle at top left, oklch(94% 0.04 70), transparent 36%),
+    var(--color-paper);
+}
+
+@layer components {
+  .panel {
+    border: 1px solid var(--color-line);
+    background: var(--color-card);
+    border-radius: 1.25rem;
+    box-shadow: 0 16px 40px oklch(40% 0.03 55 / 0.06);
+  }
+
+  .field {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    background: white;
+    border-radius: 0.8rem;
+    padding: 0.7rem 0.85rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .field:focus {
+    border-color: var(--color-brand-600);
+    box-shadow: 0 0 0 4px oklch(52% 0.11 48 / 0.15);
+  }
+
+  .btn {
+    border-radius: 0.8rem;
+    background: var(--color-ink);
+    color: white;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+  }
 }

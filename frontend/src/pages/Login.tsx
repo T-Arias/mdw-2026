@@ -3,6 +3,12 @@ import { useState, type SubmitEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate, type Location } from "react-router";
 import { useAuth } from "../auth/useAuth";
 import { getErrorMessage } from "../lib/api";
+import type { UserRole } from "../types/auth";
+
+function homeFor(role: UserRole, from: string): string {
+  if (from !== "/home" && from !== "/login" && from !== "/register") return from;
+  return role === "ADMIN" ? "/admin" : "/perfil";
+}
 
 export const Login = () => {
   const { user, login } = useAuth();
@@ -17,7 +23,7 @@ export const Login = () => {
   const from = (location.state as { from?: Location } | null)?.from?.pathname ?? "/home";
 
   if (user) {
-    return <Navigate to={from} replace />;
+    return <Navigate to={homeFor(user.role, from)} replace />;
   }
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
@@ -25,8 +31,8 @@ export const Login = () => {
     setError(null);
     setSubmitting(true);
     try {
-      await login({ email, password });
-      navigate(from, { replace: true });
+      const sessionUser = await login({ email, password });
+      navigate(homeFor(sessionUser.role, from), { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -36,11 +42,13 @@ export const Login = () => {
 
   // Fuera del Layout: la pagina arma su propio fondo de pantalla completa.
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6 font-sans">
-      <section className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900">Iniciar sesion</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1 text-sm text-slate-700">
+    <main className="flex min-h-screen items-center justify-center p-6 font-sans">
+      <section className="panel w-full max-w-md p-8">
+        <p className="text-xs font-medium tracking-[0.18em] text-brand-700 uppercase">MDW</p>
+        <h2 className="mt-2 font-serif text-4xl text-ink">Iniciar sesión</h2>
+        <p className="mt-2 mb-6 text-sm text-ink/60">Entrá con el email y la contraseña de tu cuenta.</p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink/80">
             Email
             <input
               type="email"
@@ -48,10 +56,10 @@ export const Login = () => {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded border border-slate-300 px-3 py-2"
+              className="field font-normal"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm text-slate-700">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink/80">
             Contraseña
             <input
               type="password"
@@ -59,25 +67,21 @@ export const Login = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded border border-slate-300 px-3 py-2"
+              className="field font-normal"
             />
           </label>
           {error && (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
             </p>
           )}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded bg-slate-900 py-2 font-medium text-white transition hover:bg-slate-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={submitting} className="btn mt-1">
             {submitting ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
-          ¿No tenes cuenta?{" "}
-          <Link to="/register" className="font-medium text-slate-900 underline">
+        <p className="mt-6 text-center text-sm text-ink/60">
+          ¿No tenés cuenta?{" "}
+          <Link to="/register" className="font-medium text-brand-700 underline decoration-brand-600/40">
             Crear cuenta
           </Link>
         </p>

@@ -31,40 +31,53 @@ export const StudentDetail = () => {
   }, [id]);
 
   if (loading) {
-    return <p className="text-slate-500">Cargando estudiante...</p>;
+    return <p className="text-ink/50">Cargando estudiante...</p>;
   }
 
   if (error || !student) {
     return (
-      <section>
-        <p className="text-red-600">No se pudo cargar el estudiante: {error}</p>
-        <Link to="/home" className="mt-2 inline-block text-slate-600 underline">
+      <section className="panel p-6">
+        <p className="text-red-700">No se pudo cargar el estudiante: {error}</p>
+        <Link to="/home" className="mt-3 inline-block text-sm text-brand-700 underline">
           Volver al listado
         </Link>
       </section>
     );
   }
 
+  const initials = `${student.firstName[0] ?? ""}${student.lastName[0] ?? ""}`.toUpperCase();
+
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <Link to="/home" className="text-sm text-slate-500 underline">
+    <section className="panel p-8">
+      <Link to="/home" className="text-sm text-brand-700 underline decoration-brand-600/40">
         Volver al listado
       </Link>
-      <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-        {student.lastName}, {student.firstName}
-      </h2>
-      <p className="text-slate-600">{student.email}</p>
-      <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-        <dt className="text-slate-500">Carrera</dt>
-        <dd className="text-slate-900">{student.career}</dd>
-        <dt className="text-slate-500">Estado</dt>
-        <dd className={student.active ? "text-green-600" : "text-slate-400"}>
-          {student.active ? "Activo" : "Inactivo"}
-        </dd>
-        <dt className="text-slate-500">Alta</dt>
-        <dd className="text-slate-900">
-          {new Date(student.createdAt).toLocaleDateString("es-AR")}
-        </dd>
+      <div className="mt-5 flex items-center gap-4">
+        <span className="flex size-16 items-center justify-center rounded-full bg-brand-50 font-serif text-2xl text-brand-700">
+          {initials}
+        </span>
+        <div>
+          <h2 className="font-serif text-4xl text-ink">
+            {student.lastName}, {student.firstName}
+          </h2>
+          <p className="text-ink/60">{student.email}</p>
+        </div>
+      </div>
+      <dl className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl bg-paper px-4 py-3">
+          <dt className="text-xs tracking-wide text-ink/45 uppercase">Carrera</dt>
+          <dd className="mt-1 text-ink">{student.career}</dd>
+        </div>
+        <div className="rounded-2xl bg-paper px-4 py-3">
+          <dt className="text-xs tracking-wide text-ink/45 uppercase">Estado</dt>
+          <dd className={`mt-1 ${student.active ? "text-emerald-700" : "text-ink/45"}`}>
+            {student.active ? "Activo" : "Inactivo"}
+          </dd>
+        </div>
+        <div className="rounded-2xl bg-paper px-4 py-3">
+          <dt className="text-xs tracking-wide text-ink/45 uppercase">Alta</dt>
+          <dd className="mt-1 text-ink">{new Date(student.createdAt).toLocaleDateString("es-AR")}</dd>
+        </div>
       </dl>
     </section>
   );

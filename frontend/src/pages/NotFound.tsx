@@ -2,9 +2,10 @@ import { Link } from "react-router";
 
 export const NotFound = () => {
   return (
-    <section className="text-center">
-      <h2 className="text-2xl font-semibold text-slate-900">404 — Pagina no encontrada</h2>
-      <Link to="/home" className="mt-2 inline-block text-slate-600 underline">
+    <section className="panel mx-auto max-w-lg px-8 py-12 text-center">
+      <p className="font-serif text-7xl text-brand-700">404</p>
+      <h2 className="mt-2 font-serif text-3xl text-ink">Página no encontrada</h2>
+      <Link to="/home" className="mt-4 inline-block text-sm text-brand-700 underline">
         Volver al inicio
       </Link>
     </section>
