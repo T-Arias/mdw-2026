@@ -1,8 +1,9 @@
 // Ruta privada: cualquier usuario logueado. ProtectedRoute garantiza que user no es null.
-import { useAuth } from "../auth/useAuth";
+import { useAppSelector } from "../store";
+import { selectUser } from "../store/authSlice";
 
 export const Profile = () => {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   if (!user) return null;
 
   return (

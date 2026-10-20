@@ -1,14 +1,23 @@
 // Layout generico: header con logout. Se monta una sola vez, al navegar solo cambia lo que renderiza <Outlet />.
 import { Outlet, useNavigate } from "react-router";
-import { useAuth } from "../auth/useAuth";
+import * as authService from "../services/auth";
+import { useAppDispatch, useAppSelector } from "../store";
+import { loggedOut, selectUser } from "../store/authSlice";
 
 export const Layout = () => {
-  const { user, logout } = useAuth();
+  const user = useAppSelector(selectUser);
+  
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  // Aunque falle el request, se cierra la sesion local (igual que el `finally` del AuthProvider).
   const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
+    try {
+      await authService.logout();
+    } finally {
+      dispatch(loggedOut());
+      navigate("/login", { replace: true });
+    }
   };
 
   return (

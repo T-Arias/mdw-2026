@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuth } from "../auth/useAuth";
+import { useAppSelector } from "../store";
+import { selectChecking, selectUser } from "../store/authSlice";
 import type { UserRole } from "../types/auth";
 
 interface ProtectedRouteProps {
@@ -8,10 +9,11 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ roles, redirectTo = "/home" }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const user = useAppSelector(selectUser);
+  const checking = useAppSelector(selectChecking);
   const location = useLocation();
 
-  if (loading) {
+  if (checking) {
     return <p className="text-slate-500">Verificando sesion...</p>;
   }
 

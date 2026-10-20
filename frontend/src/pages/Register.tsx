@@ -1,12 +1,14 @@
 // Ruta publica "/register". Crea el usuario (siempre USER) y abre la sesion con el mismo email/password.
 import { useState, type SubmitEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
-import { useAuth } from "../auth/useAuth";
 import { getErrorMessage } from "../lib/api";
 import * as authService from "../services/auth";
+import { useAppDispatch, useAppSelector } from "../store";
+import { loggedIn, selectUser } from "../store/authSlice";
 
 export const Register = () => {
-  const { user, login } = useAuth();
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,7 +26,7 @@ export const Register = () => {
     setSubmitting(true);
     try {
       await authService.register({ name, email, password });
-      await login({ email, password });
+      dispatch(loggedIn(await authService.login({ email, password })));
       navigate("/home", { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));

@@ -1,12 +1,15 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, Navigate, useLocation, useNavigate, type Location } from "react-router";
-import { useAuth } from "../auth/useAuth";
-import { getErrorMessage } from "../lib/api";
 import { loginSchema, type LoginFormValues } from "../schemas/auth.schema";
+import { getErrorMessage } from "../lib/api";
+import * as authService from "../services/auth";
+import { useAppDispatch, useAppSelector } from "../store";
+import { loggedIn, selectUser } from "../store/authSlice";
 
 export const Login = () => {
-  const { user, login } = useAuth();
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -27,13 +30,13 @@ export const Login = () => {
 
   const onSubmit = async (credentials: LoginFormValues) => {
     try {
-      await login(credentials);
+      // Antes: login() del contexto hacia setUser. Ahora: request + dispatch de la accion.
+      dispatch(loggedIn(await authService.login(credentials)));
       navigate(from, { replace: true });
     } catch (err) {
       setError("root.server", { message: getErrorMessage(err) });
     }
   };
-  console.log("render")
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6 font-sans">
