@@ -1,49 +1,42 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getErrorMessage } from "../lib/api";
 import type { StudentFormValues } from "../schemas/student.schema";
-import { createStudent, deleteStudent, getStudents, updateStudent } from "../services/students";
+import {
+  useCreateStudentMutation,
+  useDeleteStudentMutation,
+  useGetStudentsQuery,
+  useUpdateStudentMutation,
+} from "../store/api";
 import type { Student } from "../types/student";
 import { StudentForm } from "../components/admin/StudentForm";
 
 export const Admin = () => {
-  const [students, setStudents] = useState<Student[]>([]);
+  const { data: students = [], error: loadError } = useGetStudentsQuery();
+  const [createStudent] = useCreateStudentMutation();
+  const [updateStudent] = useUpdateStudentMutation();
+  const [deleteStudent, { error: deleteError }] = useDeleteStudentMutation();
+  // Estado de UI de esta pantalla: no es global, se queda en useState.
   const [editing, setEditing] = useState<Student | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        setStudents(await getStudents());
-      } catch (err) {
-        setError(getErrorMessage(err));
-      }
-    };
-
-    loadStudents();
-  }, []);
-
+  // Ya no se actualiza el listado a mano (map / spread / filter): cada mutation invalida el tag
+  // "Students" y RTK Query vuelve a pedir el listado. unwrap() lanza el error para que lo muestre el form.
   const handleSave = async (values: StudentFormValues) => {
     if (editing) {
-      const updated = await updateStudent(editing._id, values);
-      setStudents((prev) => prev.map((s) => (s._id === updated._id ? updated : s)));
+      await updateStudent({ id: editing._id, values }).unwrap();
       setEditing(null);
     } else {
-      const created = await createStudent(values);
-      setStudents((prev) => [...prev, created]);
+      await createStudent(values).unwrap();
     }
   };
 
   const handleDelete = async (student: Student) => {
     if (!window.confirm(`¿Eliminar a ${student.firstName} ${student.lastName}?`)) return;
-    setError(null);
-    try {
-      await deleteStudent(student._id);
-      setStudents((prev) => prev.filter((s) => s._id !== student._id));
-      if (editing?._id === student._id) setEditing(null);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
+    // Sin unwrap: si falla, el error queda en `deleteError` y se muestra abajo.
+    const result = await deleteStudent(student._id);
+    if (!result.error && editing?._id === student._id) setEditing(null);
   };
+
+  const error = loadError ?? deleteError;
 
   return (
     <section className="flex flex-col gap-6">
@@ -53,7 +46,7 @@ export const Admin = () => {
 
       {error && (
         <p role="alert" className="text-sm text-red-600">
-          {error}
+          {getErrorMessage(error)}
         </p>
       )}
 

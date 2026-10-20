@@ -1,43 +1,22 @@
 // Page: ruta publica "/students/:id". El id sale de la URL con useParams.
-import { useEffect, useState } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 import { Link, useParams } from "react-router";
 import { getErrorMessage } from "../lib/api";
-import { getStudentById } from "../services/students";
-import type { Student } from "../types/student";
+import { useGetStudentByIdQuery } from "../store/api";
 
 export const StudentDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [student, setStudent] = useState<Student | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // Cada id es una entrada distinta en la cache. skipToken = no pedir nada si no hay id.
+  const { data: student, isLoading, error } = useGetStudentByIdQuery(id ?? skipToken);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const loadStudent = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getStudentById(id);
-        setStudent(data);
-      } catch (err) {
-        setError(getErrorMessage(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadStudent();
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return <p className="text-slate-500">Cargando estudiante...</p>;
   }
 
   if (error || !student) {
     return (
       <section>
-        <p className="text-red-600">No se pudo cargar el estudiante: {error}</p>
+        <p className="text-red-600">No se pudo cargar el estudiante: {getErrorMessage(error)}</p>
         <Link to="/home" className="mt-2 inline-block text-slate-600 underline">
           Volver al listado
         </Link>

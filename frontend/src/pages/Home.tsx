@@ -1,38 +1,18 @@
-// Page: ruta publica "/home". Pide los datos y compone components.
-import { useEffect, useState } from "react";
+// Page: ruta publica "/home". Los datos salen de la cache de RTK Query: sin useEffect ni useState.
 import { getErrorMessage } from "../lib/api";
-import { getStudents } from "../services/students";
-import type { Student } from "../types/student";
+import { useGetStudentsQuery } from "../store/api";
 import { StudentCard } from "../components/StudentCard";
 
 export const Home = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // Si Admin ya pidio el listado, sale de la cache al instante (mismo endpoint, mismos argumentos).
+  const { data: students = [], isLoading, error } = useGetStudentsQuery();
 
-  // El callback de useEffect no puede ser async (devolveria una Promise en vez del cleanup):
-  // se define una arrow async adentro y se la invoca.
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        const data = await getStudents();
-        setStudents(data);
-      } catch (err) {
-        setError(getErrorMessage(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadStudents();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <p className="text-slate-500">Cargando estudiantes...</p>;
   }
 
   if (error) {
-    return <p className="text-red-600">No se pudieron cargar los estudiantes: {error}</p>;
+    return <p className="text-red-600">No se pudieron cargar los estudiantes: {getErrorMessage(error)}</p>;
   }
 
   if (students.length === 0) {
