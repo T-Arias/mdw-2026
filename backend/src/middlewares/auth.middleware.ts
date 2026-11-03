@@ -8,8 +8,6 @@ import { UserRole } from "../types/auth.types.js";
 export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
-    console.log(session);
-    
 
     if (!session) {
       res.status(401).json({ success: false, error: { message: "Sesion requerida" } });
