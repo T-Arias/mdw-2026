@@ -1,20 +1,14 @@
-export type UserRole = "ADMIN" | "USER";
+import type { auth } from "../lib/auth.js";
 
-export interface JwtAccessPayload {
-  userId: string;
-  role: UserRole;
-}
-
-export interface JwtRefreshPayload {
-  userId: string;
-  role: UserRole;
-}
+// Tipos inferidos de la config de Better Auth: incluyen el `role` que agrega el plugin admin.
+type Session = typeof auth.$Infer.Session;
+export type SessionUser = Session["user"];
+export type UserRole = "admin" | "user";
 
 declare global {
   namespace Express {
     interface Request {
-      userId?: string;
-      userRole?: UserRole;
+      user?: SessionUser;
     }
   }
 }

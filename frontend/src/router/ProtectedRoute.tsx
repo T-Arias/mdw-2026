@@ -1,6 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAppSelector } from "../store";
-import { selectChecking, selectUser } from "../store/authSlice";
+import { useSession } from "../lib/auth-client";
 import type { UserRole } from "../types/auth";
 
 interface ProtectedRouteProps {
@@ -9,19 +8,19 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ roles, redirectTo = "/home" }: ProtectedRouteProps) => {
-  const user = useAppSelector(selectUser);
-  const checking = useAppSelector(selectChecking);
+  // isPending reemplaza al viejo `checking`: true hasta que responde /api/auth/get-session.
+  const { data: session, isPending } = useSession();
   const location = useLocation();
 
-  if (checking) {
+  if (isPending) {
     return <p className="text-slate-500">Verificando sesion...</p>;
   }
 
-  if (!user) {
+  if (!session) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (roles && !roles.includes(user.role)) {
+  if (roles && !roles.includes(session.user.role as UserRole)) {
     return <Navigate to={redirectTo} replace />;
   }
 

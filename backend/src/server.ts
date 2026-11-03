@@ -1,23 +1,23 @@
 import express, { Request, Response } from "express";
+// dotenv primero: lib/auth.ts lee las variables de entorno apenas se importa.
 import "dotenv/config";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import v1Router from "./routes";
-import { connectMongoDB } from "./config/db";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth.js";
+import v1Router from "./routes/index.js";
+import { connectMongoDB } from "./config/db.js";
 
 const app = express();
 const PORT: number = Number(process.env.PORT) || 3000;
 type Environment = "development" | "test" | "production";
 const NODE_ENV: Environment = (process.env.NODE_ENV as Environment) ?? "development";
 
-// QUERY no esta en los metodos por defecto de cors: sin esto el preflight de QUERY /subjects falla.
-app.use(cors({
-    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
-    credentials: true,
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "QUERY"],
-}));
+// Sin cors ni cookie-parser: el front llama a /api en su mismo origen (proxy de Vite en local,
+// rewrite del Static Site en Render), asi que no hay requests cross-origin ni cookies de terceros.
+
+// Better Auth ANTES de express.json(): el handler lee el body crudo del request.
+// "*splat" es la sintaxis de comodin de Express 5 (en Express 4 era "*").
+app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use(express.json());
-app.use(cookieParser());
 
 app.use("/api/v1", v1Router);
 

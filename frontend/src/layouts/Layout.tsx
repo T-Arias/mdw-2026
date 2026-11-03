@@ -1,23 +1,20 @@
 // Layout generico: header con logout. Se monta una sola vez, al navegar solo cambia lo que renderiza <Outlet />.
-import { Outlet, useNavigate } from "react-router";
-import * as authService from "../services/auth";
-import { useAppDispatch, useAppSelector } from "../store";
-import { loggedOut, selectUser } from "../store/authSlice";
+import { Outlet } from "react-router";
+import { signOut, useSession } from "../lib/auth-client";
 
 export const Layout = () => {
-  const user = useAppSelector(selectUser);
-  
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
-  // Aunque falle el request, se cierra la sesion local (igual que el `finally` del AuthProvider).
+  const { data: session } = useSession();
+  const user = session?.user;
+  // signOut borra la sesion EN LA BASE (no solo la cookie).
+  // Recarga completa en vez de navigate(): useSession refresca async, y con navigate() el Login
+  // todavia ve la sesion vieja en cache y rebota a /home. La recarga tambien limpia el cache de RTK Query.
   const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } finally {
-      dispatch(loggedOut());
-      navigate("/login", { replace: true });
+    const { error } = await signOut();
+    if (error) {
+      alert(error.message ?? "No se pudo cerrar sesion");
+      return;
     }
+    window.location.replace("/login");
   };
 
   return (

@@ -6,13 +6,13 @@ import {
   createStudent,
   updateStudent,
   deleteStudent,
-} from "../controllers/students.controller";
-import { validateBody } from "../middlewares/validate";
-import { createStudentSchema, listStudentsSchema, updateStudentSchema } from "../schemas/student.schema";
-import { authMiddleware, requireRole } from "../middlewares/auth.middleware";
+} from "../controllers/students.controller.js";
+import { validateBody } from "../middlewares/validate.js";
+import { createStudentSchema, listStudentsSchema, updateStudentSchema } from "../schemas/student.schema.js";
+import { authMiddleware, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = Router();
-const onlyAdmin = [authMiddleware, requireRole("ADMIN")];
+const onlyAdmin = [authMiddleware, requireRole("admin")];
 
 router.query!("/", validateBody(listStudentsSchema), listStudents);
 router.get("/:id", getStudentById);
