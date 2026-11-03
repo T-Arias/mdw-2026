@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { QueryFilter, isValidObjectId } from "mongoose";
-import Student, { IStudent, IStudentDocument } from "../models/Student";
+import Student, { IStudent, IStudentDocument } from "../models/Student.js";
 
 const ALLOWED_SORT_FIELDS = ["createdAt", "firstName", "lastName", "enrollmentDate"] as const;
 type SortField = (typeof ALLOWED_SORT_FIELDS)[number];

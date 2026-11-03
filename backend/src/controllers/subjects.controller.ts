@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { QueryFilter, isValidObjectId } from "mongoose";
-import Subject, { ISubjectDocument } from "../models/Subject";
+import Subject, { ISubjectDocument } from "../models/Subject.js";
 import {
   CreateSubjectInput,
   ListSubjectsInput,
   UpdateSubjectInput,
-} from "../schemas/subject.schema";
+} from "../schemas/subject.schema.js";
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

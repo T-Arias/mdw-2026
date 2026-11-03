@@ -1,14 +1,10 @@
-// Ruta publica "/register". Crea el usuario (siempre USER) y abre la sesion con el mismo email/password.
+// Ruta publica "/register". Crea el usuario (siempre rol "user") y Better Auth abre la sesion en el mismo paso.
 import { useState, type SubmitEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
-import { getErrorMessage } from "../lib/api";
-import * as authService from "../services/auth";
-import { useAppDispatch, useAppSelector } from "../store";
-import { loggedIn, selectUser } from "../store/authSlice";
+import { signUp, useSession } from "../lib/auth-client";
 
 export const Register = () => {
-  const user = useAppSelector(selectUser);
-  const dispatch = useAppDispatch();
+  const { data: session } = useSession();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -16,7 +12,7 @@ export const Register = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  if (user) {
+  if (session) {
     return <Navigate to="/home" replace />;
   }
 
@@ -24,15 +20,14 @@ export const Register = () => {
     event.preventDefault();
     setError(null);
     setSubmitting(true);
-    try {
-      await authService.register({ name, email, password });
-      dispatch(loggedIn(await authService.login({ email, password })));
-      navigate("/home", { replace: true });
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
+    // autoSignIn: signUp ya deja la sesion abierta, no hace falta un login aparte.
+    const { error: signUpError } = await signUp.email({ name, email, password });
+    setSubmitting(false);
+    if (signUpError) {
+      setError(signUpError.message ?? "No se pudo crear la cuenta");
+      return;
     }
+    navigate("/home", { replace: true });
   };
 
   // Fuera del Layout, igual que Login: arma su propio fondo de pantalla completa.
@@ -70,7 +65,7 @@ export const Register = () => {
             <input
               type="password"
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

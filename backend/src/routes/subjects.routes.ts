@@ -6,13 +6,13 @@ import {
   createSubject,
   updateSubject,
   deleteSubject,
-} from "../controllers/subjects.controller";
-import { validateBody } from "../middlewares/validate";
+} from "../controllers/subjects.controller.js";
+import { validateBody } from "../middlewares/validate.js";
 import {
   createSubjectSchema,
   listSubjectsSchema,
   updateSubjectSchema,
-} from "../schemas/subject.schema";
+} from "../schemas/subject.schema.js";
 
 const router = Router();
 

@@ -1,10 +1,9 @@
 import axios from "axios";
 
-// withCredentials: true es la mitad frontend del contrato de cookies httpOnly.
-// La otra mitad es cors({ credentials: true }) en el backend: hacen falta las dos.
+// Ruta relativa: mismo origen que el front, el navegador manda la cookie de sesion solo.
+// En local la resuelve el proxy de Vite; en Render, el rewrite /api/* del Static Site.
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+  baseURL: "/api/v1",
 });
 
 // Los errores del backend vienen como { error: "..." } o { error: { message } }.

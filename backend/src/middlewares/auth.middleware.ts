@@ -1,47 +1,36 @@
-// Protege rutas: exige un accessToken valido en cookies; si expiro, intenta renovarlo con el refreshToken.
+// Protege rutas: Better Auth lee la cookie de sesion y la busca en Mongo.
+// Antes: verificar el JWT + renovar con el refresh token. Ahora la sesion vive en la base, y se puede revocar.
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { JwtAccessPayload, JwtRefreshPayload, UserRole } from "../types/auth.types";
+import { fromNodeHeaders } from "better-auth/node";
+import { auth } from "../lib/auth.js";
+import { UserRole } from "../types/auth.types.js";
 
-function getAccessSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error("Missing JWT_SECRET environment variable");
-  return secret;
-}
-
-function getRefreshSecret(): string {
-  const secret = process.env.JWT_REFRESH_SECRET;
-  if (!secret) throw new Error("Missing JWT_REFRESH_SECRET environment variable");
-  return secret;
-}
-
-export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
-  const accessToken = req.cookies?.accessToken;
-
-  if (!accessToken) {
-    renewFromRefreshToken(req, res, next);
-    return;
-  }
-
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const decoded = jwt.verify(accessToken, getAccessSecret()) as JwtAccessPayload;
-    req.userId = decoded.userId;
-    req.userRole = decoded.role;
-    next();
-  } catch (error) {
-    renewFromRefreshToken(req, res, next);
-  }
-}
+    const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
 
-// requireRole: siempre se usa DESPUES de authMiddleware, asume que req.userRole ya esta seteado.
-export function requireRole(...rolesPermitidos: UserRole[]) {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.userRole) {
+    if (!session) {
       res.status(401).json({ success: false, error: { message: "Sesion requerida" } });
       return;
     }
 
-    if (!rolesPermitidos.includes(req.userRole)) {
+    req.user = session.user;
+    next();
+  } catch (error) {
+    console.error("[auth] error reading session:", error);
+    res.status(500).json({ success: false, error: { message: "No se pudo verificar la sesion" } });
+  }
+}
+
+// requireRole: siempre se usa DESPUES de authMiddleware, asume que req.user ya esta seteado.
+export function requireRole(...rolesPermitidos: UserRole[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: { message: "Sesion requerida" } });
+      return;
+    }
+
+    if (!rolesPermitidos.includes(req.user.role as UserRole)) {
       res.status(403).json({ success: false, error: { message: "No tenes permisos para realizar esta accion" } });
       return;
     }
@@ -49,35 +38,3 @@ export function requireRole(...rolesPermitidos: UserRole[]) {
     next();
   };
 }
-
-function renewFromRefreshToken(req: Request, res: Response, next: NextFunction): void {
-  const refreshToken = req.cookies?.refreshToken;
-
-  if (!refreshToken) {
-    res.status(401).json({ success: false, error: { message: "Sesion requerida" } });
-    return;
-  }
-
-  try {
-    const decoded = jwt.verify(refreshToken, getRefreshSecret()) as JwtRefreshPayload;
-
-    const newAccessToken = jwt.sign({ userId: decoded.userId, role: decoded.role }, getAccessSecret(), {
-      expiresIn: process.env.JWT_EXPIRES_IN ?? "15m",
-    } as jwt.SignOptions);
-
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000,
-    });
-
-    req.userId = decoded.userId;
-    req.userRole = decoded.role;
-    next();
-  } catch (error) {
-    res.status(401).json({ success: false, error: { message: "Sesion invalida o expirada" } });
-  }
-}
-
-
