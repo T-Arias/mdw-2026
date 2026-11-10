@@ -1,5 +1,5 @@
 // Layout generico: header con logout. Se monta una sola vez, al navegar solo cambia lo que renderiza <Outlet />.
-import { Outlet } from "react-router";
+import { Link, Outlet } from "react-router";
 import { signOut, useSession } from "../lib/auth-client";
 
 export const Layout = () => {
@@ -23,13 +23,18 @@ export const Layout = () => {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Estudiantes</h1>
           {user && (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded px-3 py-1.5 text-sm hover:bg-white/10"
-            >
-              Salir ({user.name})
-            </button>
+            <nav className="flex items-center gap-2">
+              <Link to="/chat" className="rounded px-3 py-1.5 text-sm hover:bg-white/10">
+                Asistente
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded px-3 py-1.5 text-sm hover:bg-white/10"
+              >
+                Salir ({user.name})
+              </button>
+            </nav>
           )}
         </div>
       </header>

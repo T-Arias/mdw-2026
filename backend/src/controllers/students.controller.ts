@@ -1,119 +1,22 @@
+// Controller = capa HTTP: lee req, llama al service, traduce el resultado a status + JSON.
+// La logica de negocio vive en services/students.service.ts (compartida con el agente).
 import { Request, Response } from "express";
-import { QueryFilter, isValidObjectId } from "mongoose";
-import Student, { IStudent, IStudentDocument } from "../models/Student.js";
+import { isValidObjectId } from "mongoose";
+import * as studentsService from "../services/students.service.js";
+import { CreateStudentInput, ListStudentsInput, UpdateStudentInput } from "../schemas/student.schema.js";
 
-const ALLOWED_SORT_FIELDS = ["createdAt", "firstName", "lastName", "enrollmentDate"] as const;
-type SortField = (typeof ALLOWED_SORT_FIELDS)[number];
-
-interface ListStudentsFilters {
-  career?: string;
-  active?: boolean;
-  search?: string;
-  page: number;
-  limit: number;
-  sortBy: SortField;
-  sortOrder: 1 | -1;
-}
-
-// Escapes regex metacharacters so a search term can't inject its own regex
-// (ReDoS or unintended matches) into the $regex filter below.
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-// QUERY carries the filters in the body instead of the URL, so we parse and
-// validate req.body by hand here (no query-string parsing involved).
-function parseListStudentsBody(body: unknown): ListStudentsFilters | { error: string } {
-  const input = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
-
-  const page = Number.isInteger(input.page) ? (input.page as number) : 1;
-  const limit = Number.isInteger(input.limit) ? (input.limit as number) : 20;
-
-  if (page < 1) {
-    return { error: "page must be >= 1" };
-  }
-
-  if (limit < 1 || limit > 100) {
-    return { error: "limit must be between 1 and 100" };
-  }
-
-  const sortBy = typeof input.sortBy === "string" ? input.sortBy : "createdAt";
-
-  if (!ALLOWED_SORT_FIELDS.includes(sortBy as SortField)) {
-    return { error: `sortBy must be one of: ${ALLOWED_SORT_FIELDS.join(", ")}` };
-  }
-
-  const filters: ListStudentsFilters = {
-    page,
-    limit,
-    sortBy: sortBy as SortField,
-    sortOrder: input.sortOrder === "asc" ? 1 : -1,
-  };
-
-  if (typeof input.career === "string" && input.career.trim()) {
-    filters.career = input.career.trim();
-  }
-
-  if (typeof input.active === "boolean") {
-    filters.active = input.active;
-  }
-
-  if (typeof input.search === "string" && input.search.trim()) {
-    filters.search = input.search.trim().slice(0, 120);
-  }
-
-  return filters;
-}
-
-// QUERY /api/students
+// QUERY /api/v1/students — el body ya viene validado y con defaults por validateBody(listStudentsSchema).
 // Body example: { "career": "Systems", "active": true, "search": "ana", "page": 1, "limit": 20 }
-export async function listStudents(req: Request, res: Response): Promise<void> {
-  const parsed = parseListStudentsBody(req.body);
-
-  if ("error" in parsed) {
-    res.status(400).json({ error: parsed.error });
-    return;
-  }
-
-  const { career, active, search, page, limit, sortBy, sortOrder } = parsed;
-
-  // Build the Mongoose filter from whitelisted fields only — never spread
-  // req.body directly into a query (that would let a client inject operators
-  // like { "$gt": "" } into any field).
-  const filter: QueryFilter<IStudentDocument> = {};
-  if (career) filter.career = career;
-  if (active !== undefined) filter.active = active;
-  if (search) {
-    const safeSearch = escapeRegex(search);
-    filter.$or = [
-      { firstName: { $regex: safeSearch, $options: "i" } },
-      { lastName: { $regex: safeSearch, $options: "i" } },
-      { email: { $regex: safeSearch, $options: "i" } },
-    ];
-  }
-
+export async function listStudents(req: Request<{}, {}, ListStudentsInput>, res: Response): Promise<void> {
   try {
-    const skip = (page - 1) * limit;
-
-    const [students, total] = await Promise.all([
-      Student.find(filter)
-        .sort({ [sortBy]: sortOrder })
-        .skip(skip)
-        .limit(limit),
-      Student.countDocuments(filter),
-    ]);
-
-    res.status(200).json({
-      data: students,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    });
+    res.status(200).json(await studentsService.listStudents(req.body));
   } catch (error) {
     console.error("[students] error listing:", error);
     res.status(500).json({ error: "Could not fetch students" });
   }
 }
 
-export async function getStudentById(req: Request, res: Response): Promise<void> {
+export async function getStudentById(req: Request<{ id: string }>, res: Response): Promise<void> {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
@@ -122,7 +25,7 @@ export async function getStudentById(req: Request, res: Response): Promise<void>
   }
 
   try {
-    const student = await Student.findById(id);
+    const student = await studentsService.findStudentById(id);
 
     if (!student) {
       res.status(404).json({ error: "Student not found" });
@@ -131,17 +34,14 @@ export async function getStudentById(req: Request, res: Response): Promise<void>
 
     res.status(200).json(student);
   } catch (error) {
+    console.error("[students] error fetching by id:", error);
     res.status(500).json({ error: "Could not fetch the student" });
   }
 }
 
-export async function createStudent(
-  req: Request<{}, {}, Partial<IStudent>>,
-  res: Response
-): Promise<void> {
+export async function createStudent(req: Request<{}, {}, CreateStudentInput>, res: Response): Promise<void> {
   try {
-    const newStudent = await Student.create(req.body);
-    res.status(201).json(newStudent);
+    res.status(201).json(await studentsService.createStudent(req.body));
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
       res.status(400).json({ error: error.message });
@@ -154,7 +54,7 @@ export async function createStudent(
 }
 
 export async function updateStudent(
-  req: Request<{ id: string }, {}, Partial<IStudent>>,
+  req: Request<{ id: string }, {}, UpdateStudentInput>,
   res: Response
 ): Promise<void> {
   const { id } = req.params;
@@ -165,10 +65,7 @@ export async function updateStudent(
   }
 
   try {
-    const updatedStudent = await Student.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedStudent = await studentsService.updateStudent(id, req.body);
 
     if (!updatedStudent) {
       res.status(404).json({ error: "Student not found" });
@@ -187,7 +84,7 @@ export async function updateStudent(
   }
 }
 
-export async function deleteStudent(req: Request, res: Response): Promise<void> {
+export async function deleteStudent(req: Request<{ id: string }>, res: Response): Promise<void> {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
@@ -196,7 +93,7 @@ export async function deleteStudent(req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const deletedStudent = await Student.findByIdAndDelete(id);
+    const deletedStudent = await studentsService.deleteStudent(id);
 
     if (!deletedStudent) {
       res.status(404).json({ error: "Student not found" });

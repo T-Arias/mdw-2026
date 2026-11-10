@@ -29,7 +29,7 @@ dentro de `backend/` o `frontend/`, no en la raiz.
 | [x] | Clase 10 — 13/10 — Formularios | React Hook Form + Zod, login, panel admin |
 | [x] | Clase 11 — 20/10 — Estado global | Redux Toolkit + RTK Query, sesión persistente |
 | [x] | Clase 12 — 27/10 — 📝 Parcial II | clases 7–11 |
-| [ ] | Clase 13 — 03/11 — Better Auth + deploy | Migración a Better Auth (email + GitHub), sesiones revocables, deploy en Render, consigna TP2 |
-| [ ] | Clase 14 — 10/11 — LLMs y LangChain I | Prompting, chains, endpoint `/chat` |
+| [x] | Clase 13 — 03/11 — Better Auth + deploy | Migración a Better Auth (email + GitHub), sesiones revocables, deploy en Render, consigna TP2 |
+| [x] | Clase 14 — 10/11 — LLMs y LangChain I | Prompting, chains, endpoint `/chat` |
 | [ ] | Clase 15 — 17/11 — LangChain II: RAG | Embeddings, vector store, chatbot sobre el propio perfil, demo final |
 | [ ] | Clase 16 — 24/11 — 📝 Recuperatorio | Sin contenido nuevo |

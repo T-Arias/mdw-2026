@@ -1,69 +1,23 @@
+// Controller = capa HTTP: lee req, llama al service, traduce el resultado a status + JSON.
+// La logica de negocio vive en services/subjects.service.ts (compartida con el agente).
 import { Request, Response } from "express";
-import { QueryFilter, isValidObjectId } from "mongoose";
-import Subject, { ISubjectDocument } from "../models/Subject.js";
-import {
-  CreateSubjectInput,
-  ListSubjectsInput,
-  UpdateSubjectInput,
-} from "../schemas/subject.schema.js";
-
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function isDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code: unknown }).code === 11000
-  );
-}
+import { isValidObjectId } from "mongoose";
+import * as subjectsService from "../services/subjects.service.js";
+import { CreateSubjectInput, ListSubjectsInput, UpdateSubjectInput } from "../schemas/subject.schema.js";
+import { isDuplicateKeyError } from "../lib/is-duplicate-key-error.js";
 
 // QUERY /api/v1/subjects
 // Body example: { "career": "Systems", "year": 2, "active": true, "search": "web", "page": 1, "limit": 20 }
-export async function listSubjects(
-  req: Request<{}, {}, ListSubjectsInput>,
-  res: Response
-): Promise<void> {
-  const { career, year, active, search, page, limit, sortBy, sortOrder } = req.body;
-  const sortDirection = sortOrder === "asc" ? 1 : -1;
-
-  const filter: QueryFilter<ISubjectDocument> = {};
-  if (career) filter.career = career;
-  if (year !== undefined) filter.year = year;
-  if (active !== undefined) filter.active = active;
-  if (search) {
-    const safeSearch = escapeRegex(search);
-    filter.$or = [
-      { name: { $regex: safeSearch, $options: "i" } },
-      { code: { $regex: safeSearch, $options: "i" } },
-      { description: { $regex: safeSearch, $options: "i" } },
-    ];
-  }
-
+export async function listSubjects(req: Request<{}, {}, ListSubjectsInput>, res: Response): Promise<void> {
   try {
-    const skip = (page - 1) * limit;
-
-    const [subjects, total] = await Promise.all([
-      Subject.find(filter)
-        .sort({ [sortBy]: sortDirection })
-        .skip(skip)
-        .limit(limit),
-      Subject.countDocuments(filter),
-    ]);
-
-    res.status(200).json({
-      data: subjects,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    });
+    res.status(200).json(await subjectsService.listSubjects(req.body));
   } catch (error) {
     console.error("[subjects] error listing:", error);
     res.status(500).json({ error: "Could not fetch subjects" });
   }
 }
 
-export async function getSubjectById(req: Request, res: Response): Promise<void> {
+export async function getSubjectById(req: Request<{ id: string }>, res: Response): Promise<void> {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
@@ -72,7 +26,7 @@ export async function getSubjectById(req: Request, res: Response): Promise<void>
   }
 
   try {
-    const subject = await Subject.findById(id);
+    const subject = await subjectsService.findSubjectById(id);
 
     if (!subject) {
       res.status(404).json({ error: "Subject not found" });
@@ -86,13 +40,9 @@ export async function getSubjectById(req: Request, res: Response): Promise<void>
   }
 }
 
-export async function createSubject(
-  req: Request<{}, {}, CreateSubjectInput>,
-  res: Response
-): Promise<void> {
+export async function createSubject(req: Request<{}, {}, CreateSubjectInput>, res: Response): Promise<void> {
   try {
-    const newSubject = await Subject.create(req.body);
-    res.status(201).json(newSubject);
+    res.status(201).json(await subjectsService.createSubject(req.body));
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
       res.status(400).json({ error: error.message });
@@ -121,10 +71,7 @@ export async function updateSubject(
   }
 
   try {
-    const updatedSubject = await Subject.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedSubject = await subjectsService.updateSubject(id, req.body);
 
     if (!updatedSubject) {
       res.status(404).json({ error: "Subject not found" });
@@ -148,7 +95,7 @@ export async function updateSubject(
   }
 }
 
-export async function deleteSubject(req: Request, res: Response): Promise<void> {
+export async function deleteSubject(req: Request<{ id: string }>, res: Response): Promise<void> {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
@@ -157,7 +104,7 @@ export async function deleteSubject(req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const deletedSubject = await Subject.findByIdAndDelete(id);
+    const deletedSubject = await subjectsService.deleteSubject(id);
 
     if (!deletedSubject) {
       res.status(404).json({ error: "Subject not found" });
