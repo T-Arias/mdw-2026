@@ -9,6 +9,7 @@ import { Register } from "../pages/Register";
 import { Profile } from "../pages/Profile";
 import { Admin } from "../pages/Admin";
 import { Sessions } from "../pages/Sessions";
+import { Chat } from "../pages/Chat";
 import { NotFound } from "../pages/NotFound";
 
 export const router = createBrowserRouter([
@@ -29,7 +30,10 @@ export const router = createBrowserRouter([
 
       {
         element: <ProtectedRoute />,
-        children: [{ path: "perfil", element: <Profile /> }],
+        children: [
+          { path: "perfil", element: <Profile /> },
+          { path: "chat", element: <Chat /> },
+        ],
       },
 
       {
